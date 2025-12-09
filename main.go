@@ -20,7 +20,12 @@ type Pixel struct {
 var characters = [10]string{" ", ".", ":", "-", "=", "+", "*", "#", "%", "@"}
 
 func main() {
-	imagePath := "chess.jpg"
+	args := os.Args[1:]
+	if len(args) < 1 {
+		log.Fatal("Please add path to the image: go run . <path>")
+	}
+	imagePath := args[0]
+	fmt.Println(imagePath)
 	image.RegisterFormat("jpg", "jpg", jpeg.Decode, jpeg.DecodeConfig)
 	file, err := os.Open(imagePath)
 	if err != nil {
@@ -64,7 +69,7 @@ func resizePixels(pixels [][]Pixel, originalHeight, originalWidth, newHeight, ne
 }
 
 func buildAscii(pixels [][]Pixel, height, width int) [][]string {
-	newWidth := 120
+	newWidth := 60
 	verticalCorrection := 0.5
 	newHeight := int(float64(height) * (float64(newWidth) / float64(width)) * verticalCorrection)
 	resizedPixels := resizePixels(pixels, height, width, newHeight, newWidth)
