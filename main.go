@@ -8,6 +8,8 @@ import (
 	"log"
 	"math"
 	"os"
+
+	"golang.org/x/term"
 )
 
 type Pixel struct {
@@ -69,9 +71,21 @@ func resizePixels(pixels [][]Pixel, originalHeight, originalWidth, newHeight, ne
 }
 
 func buildAscii(pixels [][]Pixel, height, width int) [][]string {
-	newWidth := 60
+	termWidth, termHeight, err := term.GetSize(0)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
 	verticalCorrection := 0.5
-	newHeight := int(float64(height) * (float64(newWidth) / float64(width)) * verticalCorrection)
+
+	scaleW := float64(termWidth) / float64(width)
+	scaleH := float64(termHeight) / float64(height) / verticalCorrection
+	scale := math.Min(scaleW, scaleH)
+
+	newWidth := int(float64(width) * scale)
+	newHeight := int(float64(height) * scale * verticalCorrection)
+
 	resizedPixels := resizePixels(pixels, height, width, newHeight, newWidth)
 	asciiPixels := make([][]string, newHeight)
 	for i, row := range resizedPixels {
@@ -84,7 +98,6 @@ func buildAscii(pixels [][]Pixel, height, width int) [][]string {
 	}
 	return asciiPixels
 }
-
 func getImageInfo(file io.ReadCloser) (height int, width int, pixelsList [][]Pixel, err error) {
 	img, _, err := image.Decode(file)
 	if err != nil {
